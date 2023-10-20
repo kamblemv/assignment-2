@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Capsule Filter</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Capsule Filter</h1>
+    <form>
+        <label for="status">Select Status:</label>
+        <select id="status">
+            <option value="Active">Active</option>
+            <option value="Retired">Retired</option>
+            <option value="Unknown">Unknown</option>
+            <option value="Destroyed">Destroyed</option>
+        </select>
+        <button id="loadButton">Load</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Capsule ID</th>
+                <th>No of Missions</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody id="capsuleTableBody"></tbody>
+    </table>
+
+    <script>
+        const statusDropdown = document.getElementById("status");
+        const loadButton = document.getElementById("loadButton");
+        const capsuleTableBody = document.getElementById("capsuleTableBody");
+
+        // Function to fetch JSON data
+        async function fetchData() {
+            try {
+                const response = await fetch("https://gist.githubusercontent.com/aravindan-tnq/4041eedcc086ddc0b1b9f40b4b060635/raw/capsules.json");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch data");
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+
+        // Function to render the table with filtered data
+        function renderTable(data) {
+            capsuleTableBody.innerHTML = ""; // Clear the table body
+
+            for (const capsule of data) {
+                const row = capsuleTableBody.insertRow();
+                row.insertCell(0).textContent = capsule.capsule_id;
+                row.insertCell(1).textContent = capsule.missions.length;
+                const detailsCell = row.insertCell(2);
+                const detailsButton = document.createElement("button");
+                detailsButton.textContent = "Details";
+                detailsButton.addEventListener("click", () => {
+                    alert(capsule.details);
+                });
+                detailsCell.appendChild(detailsButton);
+            }
+        }
+
+        // Event listener for the "Load" button
+        loadButton.addEventListener("click", async () => {
+            const selectedStatus = statusDropdown.value;
+            const data = await fetchData();
+            const filteredData = data.filter(capsule => capsule.status === selectedStatus);
+            renderTable(filteredData);
+        });
+
+        // Load data on page load
+        fetchData().then(data => renderTable(data));
+    </script>
+</body>
+</html>
